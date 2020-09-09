@@ -28,7 +28,6 @@ public:
   }
 
   // blank implementations for UI
-  virtual void declare(const char* key, const char* value){};
   virtual void openTabBox(const char* label){};
   virtual void openHorizontalBox(const char* label){};
   virtual void openVerticalBox(const char* label){};
