@@ -1,6 +1,7 @@
 #ifndef __faust2hpp_FaustImpl_H__
 #define __faust2hpp_FaustImpl_H__
 
+#include <stdexcept>
 #include <unordered_map>
 
 #include "Meta.h"
@@ -17,7 +18,9 @@ public:
   FAUSTFLOAT* getParameter(const char* name)
   {
     const auto entry = parameterMap.find(name);
-    return entry == parameterMap.end() ? nullptr : entry->second;
+    if (entry == parameterMap.end())
+      throw std::invalid_argument(std::string("FaustImpl::getParameter: invalid parameter name: ") + name);
+    return entry->second;
   }
 
   void setParameter(const char* name, FAUSTFLOAT* value)

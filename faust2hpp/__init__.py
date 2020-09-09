@@ -20,7 +20,12 @@ CODE_TEMPLATE = \
 class {class_name}
 {{
 public:
-  {class_name}() = default;
+  {class_name}()
+  {{
+    faustDsp.buildUserInterface(&faustDsp);
+    {assign_pointers}
+  }}
+
   ~{class_name}() = default;
 
   void reset()
@@ -45,7 +50,7 @@ public:
 private:
   {class_name}Faust faustDsp;
 
-  {pointers}
+  {declare_pointers}
 
   void zeroParameters()
   {{
@@ -89,7 +94,8 @@ class ParameterInfo(NamedTuple):
     """Strings used to generate code for a parameter"""
     name: str
     setter: str
-    pointer: str
+    declare_pointer: str
+    assign_pointer: str
     to_zero: str
 
 
@@ -122,12 +128,14 @@ def build_parameters(compile_path: Path, dsp_path: Path, info_path: Path = None)
         default = infos.get(name, {}).get("default", "0.0f")
 
         setter = f"void set_{name}(FAUSTFLOAT x) {{ x += {default}; *par_{name} = {transform}; }}"
-        pointer = f"FAUSTFLOAT* par_{name} = faustDsp.getParameter(\"{name}\");"
+        declare_pointer = f"FAUSTFLOAT* par_{name} = nullptr;"
+        assign_pointer = f"par_{name} = faustDsp.getParameter(\"{name}\");"
         to_zero = f"set_{name}(0.0f);"
         parameters.append(ParameterInfo(
             name=name,
             setter=setter,
-            pointer=pointer,
+            declare_pointer=declare_pointer,
+            assign_pointer=assign_pointer,
             to_zero=to_zero,
         ))
 
@@ -138,7 +146,8 @@ def generte_code(parameter_info: List[ParameterInfo], out_path: Path, class_name
     """Generate the standalone class header"""
     setters = [p.setter for p in parameter_info]
     to_zero = [p.to_zero for p in parameter_info]
-    pointers = [p.pointer for p in parameter_info]
+    declare_pointers = [p.declare_pointer for p in parameter_info]
+    assign_pointers = [p.assign_pointer for p in parameter_info]
 
     code_path = out_path / (class_name + ".h")
 
@@ -147,6 +156,7 @@ def generte_code(parameter_info: List[ParameterInfo], out_path: Path, class_name
             class_name=class_name,
             setters="\n  ".join(setters),
             to_zero="\n    ".join(to_zero),
-            pointers="\n  ".join(pointers),
+            declare_pointers="\n  ".join(declare_pointers),
+            assign_pointers="\n    ".join(assign_pointers),
         ))
 
