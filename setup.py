@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="faust2hpp",
@@ -7,7 +7,5 @@ setup(
     package_data={
         "faust2hpp": ["Source/*.h"],
     },
-    scripts=[
-        "scripts/faust2hpp"
-    ],
+    scripts=["scripts/faust2hpp"],
 )

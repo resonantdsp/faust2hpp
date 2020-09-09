@@ -3,10 +3,9 @@ import shutil
 import subprocess
 import warnings
 from pathlib import Path
-from typing import NamedTuple, List
+from typing import List, NamedTuple
 
-CODE_TEMPLATE = \
-"""
+CODE_TEMPLATE = """
 #ifndef __faust2hpp_{class_name}_H__
 #define __faust2hpp_{class_name}_H__
 
@@ -92,6 +91,7 @@ def compile_faust(out_path: Path, dsp_path: Path, class_name: str):
 
 class ParameterInfo(NamedTuple):
     """Strings used to generate code for a parameter"""
+
     name: str
     setter: str
     declare_pointer: str
@@ -99,9 +99,11 @@ class ParameterInfo(NamedTuple):
     to_zero: str
 
 
-def build_parameters(compile_path: Path, dsp_path: Path, info_path: Path = None) -> List[ParameterInfo]:
+def build_parameters(
+    compile_path: Path, dsp_path: Path, info_path: Path = None
+) -> List[ParameterInfo]:
     """Build the parameter infor for code generation"""
-    compile_json = (compile_path / f"{dsp_path.name}.json")
+    compile_json = compile_path / f"{dsp_path.name}.json"
     with compile_json.open("r") as fio:
         meta = json.load(fio)
     compile_json.unlink()
@@ -129,15 +131,17 @@ def build_parameters(compile_path: Path, dsp_path: Path, info_path: Path = None)
 
         setter = f"void set_{name}(FAUSTFLOAT x) {{ x += {default}; *par_{name} = {transform}; }}"
         declare_pointer = f"FAUSTFLOAT* par_{name} = nullptr;"
-        assign_pointer = f"par_{name} = faustDsp.getParameter(\"{name}\");"
+        assign_pointer = f'par_{name} = faustDsp.getParameter("{name}");'
         to_zero = f"set_{name}(0.0f);"
-        parameters.append(ParameterInfo(
-            name=name,
-            setter=setter,
-            declare_pointer=declare_pointer,
-            assign_pointer=assign_pointer,
-            to_zero=to_zero,
-        ))
+        parameters.append(
+            ParameterInfo(
+                name=name,
+                setter=setter,
+                declare_pointer=declare_pointer,
+                assign_pointer=assign_pointer,
+                to_zero=to_zero,
+            )
+        )
 
     return parameters
 
@@ -152,11 +156,12 @@ def generte_code(parameter_info: List[ParameterInfo], out_path: Path, class_name
     code_path = out_path / (class_name + ".h")
 
     with code_path.open("w") as fout:
-        fout.write(CODE_TEMPLATE.format(
-            class_name=class_name,
-            setters="\n  ".join(setters),
-            to_zero="\n    ".join(to_zero),
-            declare_pointers="\n  ".join(declare_pointers),
-            assign_pointers="\n    ".join(assign_pointers),
-        ))
-
+        fout.write(
+            CODE_TEMPLATE.format(
+                class_name=class_name,
+                setters="\n  ".join(setters),
+                to_zero="\n    ".join(to_zero),
+                declare_pointers="\n  ".join(declare_pointers),
+                assign_pointers="\n    ".join(assign_pointers),
+            )
+        )
