@@ -5,15 +5,15 @@ from pathlib import Path
 import faust2hpp
 
 
-def main(out_path: str, dsp_file: str, class_name: str, transforms_file: str):
+def main(out_path: str, dsp_file: str, class_name: str, pars_file: str):
     out_path = Path(out_path)
     out_path.mkdir(parents=True, exist_ok=True)
     dsp_file = Path(dsp_file)
-    transforms_file = Path(transforms_file) if transforms_file is not None else None
+    pars_file = Path(pars_file) if pars_file is not None else None
 
     faust2hpp.copy_sources(out_path)
     faust2hpp.compile_faust(out_path, dsp_file, class_name)
-    parameter_info = faust2hpp.build_parameters(out_path, dsp_file, transforms_file)
+    parameter_info = faust2hpp.build_parameters(out_path, dsp_file, pars_file)
     faust2hpp.generte_code(parameter_info, out_path, class_name)
 
 
@@ -23,5 +23,5 @@ if __name__ == "__main__":
     parser.add_argument("out_path", type=str)
     parser.add_argument("dsp_file", type=str)
     parser.add_argument("class_name", type=str)
-    parser.add_argument("--transforms_file", type=str, required=False)
+    parser.add_argument("--pars_file", type=str, required=False)
     main(**vars(parser.parse_args()))

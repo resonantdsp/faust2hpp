@@ -93,26 +93,35 @@ class ParameterInfo(NamedTuple):
     to_zero: str
 
 
-def build_parameters(compile_path: Path, dsp_path: Path, transforms_path: Path = None) -> List[ParameterInfo]:
+def build_parameters(compile_path: Path, dsp_path: Path, info_path: Path = None) -> List[ParameterInfo]:
     """Build the parameter infor for code generation"""
     compile_json = (compile_path / f"{dsp_path.name}.json")
     with compile_json.open("r") as fio:
         meta = json.load(fio)
     compile_json.unlink()
 
-    if transforms_path is not None:
-        with transforms_path.open("r") as fio:
-            transforms = json.load(fio)
+    if info_path is not None:
+        with info_path.open("r") as fio:
+            infos = json.load(fio)
     else:
-        transforms = {}
+        infos = {}
 
     parameter_names = [i["label"] for i in meta["ui"][0]["items"]]
+
+    extra_names = list(sorted(set(infos.keys()) - set(parameter_names)))
+    if extra_names:
+        warnings.warn("unused parameter names: {}".format(", ".join(extra_names)))
 
     parameters = list()
 
     for name in parameter_names:
-        transform = transforms.pop(name, "x")
-        setter = f"void set_{name}(FAUSTFLOAT x) {{ *par_{name} = {transform}; }}"
+        if info_path is not None and name not in infos:
+            warnings.warn(f"no parameter info: {name}")
+
+        transform = infos.get(name, {}).get("transform", "x")
+        default = infos.get(name, {}).get("default", "0.0f")
+
+        setter = f"void set_{name}(FAUSTFLOAT x) {{ x += {default}; *par_{name} = {transform}; }}"
         pointer = f"FAUSTFLOAT* par_{name} = faustDsp.getParameter(\"{name}\");"
         to_zero = f"set_{name}(0.0f);"
         parameters.append(ParameterInfo(
@@ -121,10 +130,6 @@ def build_parameters(compile_path: Path, dsp_path: Path, transforms_path: Path =
             pointer=pointer,
             to_zero=to_zero,
         ))
-
-    unused_transforms = list(transforms.keys())
-    if unused_transforms:
-        warnings.warn("unused parameter transforms: {}".format(", ".join(unused_transforms)))
 
     return parameters
 
@@ -144,3 +149,4 @@ def generte_code(parameter_info: List[ParameterInfo], out_path: Path, class_name
             to_zero="\n    ".join(to_zero),
             pointers="\n  ".join(pointers),
         ))
+
