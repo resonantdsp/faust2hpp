@@ -129,7 +129,15 @@ def build_parameters(
         transform = infos.get(name, {}).get("transform", "x")
         default = infos.get(name, {}).get("default", "0.0f")
 
-        setter = f"void set_{name}(FAUSTFLOAT x) {{ x += {default}; *par_{name} = {transform}; }}"
+        setter = "\n  ".join(
+            [
+                f"void set_{name}(FAUSTFLOAT x)",
+                "{",
+                f"  x += (FAUSTFLOAT)({default});",
+                f"  *par_{name} = (FAUSTFLOAT)({transform});",
+                "}",
+            ]
+        )
         declare_pointer = f"FAUSTFLOAT* par_{name} = nullptr;"
         assign_pointer = f'par_{name} = faustDsp.getParameter("{name}");'
         to_zero = f"set_{name}(0.0f);"
