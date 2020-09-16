@@ -14,8 +14,8 @@ def main(
     pars_file = Path(pars_file) if pars_file is not None else None
 
     faust2hpp.copy_sources(out_path)
-    faust2hpp.compile_faust(out_path, dsp_file, class_name)
-    parameter_info = faust2hpp.build_parameters(out_path, dsp_file, pars_file)
+    parameter_names = faust2hpp.compile_faust(out_path, dsp_file, class_name)
+    parameter_info = faust2hpp.build_parameters(parameter_names, pars_file)
     faust2hpp.generte_code(parameter_info, out_path, class_name)
 
     if print_pars:

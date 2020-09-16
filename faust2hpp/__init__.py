@@ -2,6 +2,7 @@ import json
 import shutil
 import subprocess
 import warnings
+from contextlib import contextmanager
 from pathlib import Path
 from typing import List, NamedTuple
 
@@ -80,6 +81,15 @@ private:
 SOURCE_PATH = Path(__file__).parent / "Source"
 
 
+@contextmanager
+def remove_file_ctx(path: Path):
+    yield
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
+
+
 def copy_sources(out_path: Path):
     """Copy the source headers to the output directory"""
     out_path = Path(out_path)
@@ -88,19 +98,28 @@ def copy_sources(out_path: Path):
     shutil.copy(SOURCE_PATH / "FaustImpl.h", out_path / "FaustImpl.h")
 
 
-def compile_faust(out_path: Path, dsp_path: Path, class_name: str):
+def compile_faust(out_path: Path, dsp_path: Path, class_name: str) -> List[str]:
     """Compile the FAUST code into the C++ header"""
     faust_impl_path = str(SOURCE_PATH / "FaustImpl.h")
-    command = (
-        f"faust {str(dsp_path)} "
-        f"-lang cpp -i -scal -inpl -ftz 2 -json "
-        "-scn FaustImpl "
-        f"-cn {class_name}Faust "
-        f"-a {faust_impl_path} "
-        f"-o {class_name}Faust.h "
-        f"-O {str(out_path)}"
-    )
-    subprocess.check_call(command.split(" "))
+    output_json_path = out_path / f"{dsp_path.name}.json"
+
+    with remove_file_ctx(output_json_path):
+        command = (
+            f"faust {str(dsp_path)} "
+            f"-lang cpp -i -scal -inpl -ftz 2 -json "
+            "-scn FaustImpl "
+            f"-cn {class_name}Faust "
+            f"-a {faust_impl_path} "
+            f"-o {class_name}Faust.h "
+            f"-O {str(out_path)}"
+        )
+        subprocess.check_call(command.split(" "))
+
+        with output_json_path.open("r") as fio:
+            meta = json.load(fio)
+        parameter_names = [i["label"] for i in meta["ui"][0]["items"]]
+    
+    return parameter_names
 
 
 class ParameterInfo(NamedTuple):
@@ -114,21 +133,15 @@ class ParameterInfo(NamedTuple):
 
 
 def build_parameters(
-    compile_path: Path, dsp_path: Path, info_path: Path = None
+    parameter_names: List[str],
+    info_path: Path
 ) -> List[ParameterInfo]:
     """Build the parameter infor for code generation"""
-    compile_json = compile_path / f"{dsp_path.name}.json"
-    with compile_json.open("r") as fio:
-        meta = json.load(fio)
-    compile_json.unlink()
-
     if info_path is not None:
         with info_path.open("r") as fio:
             infos = json.load(fio)
     else:
         infos = {}
-
-    parameter_names = [i["label"] for i in meta["ui"][0]["items"]]
 
     extra_names = list(sorted(set(infos.keys()) - set(parameter_names)))
     if extra_names:
@@ -141,14 +154,14 @@ def build_parameters(
             warnings.warn(f"no parameter info: {name}")
 
         transform = infos.get(name, {}).get("transform", "x")
-        default = infos.get(name, {}).get("default", "0.0f")
+        default = infos.get(name, {}).get("default", 0)
 
         setter = "\n  ".join(
             [
-                f"void set_{name}(FAUSTFLOAT x)",
+                f"inline void set_{name}(FAUSTFLOAT x)",
                 "{",
-                f"  x += (FAUSTFLOAT)({default});",
-                f"  *par_{name} = (FAUSTFLOAT)({transform});",
+                f"  x += {default:.6e}f;",
+                f"  *par_{name} = {transform};",
                 "}",
             ]
         )
