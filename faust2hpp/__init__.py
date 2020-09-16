@@ -13,8 +13,25 @@ CODE_TEMPLATE = """
 
 #include "{class_name}Faust.h"
 
-#define USCALE(x, l, u) (x + 1.0f) / 2.0f * (u - l) + l
-#define ULSCALE(x, l, u) std::exp((x + 1.0f) / 2.0f * (std::log(u) - std::log(l)) + std::log(l))
+inline float uscale(float x, float l, float u)
+{{
+  return (x + 1.0f) / 2.0f * (u - l) + l;
+}}
+
+inline double uscale(double x, double l, double u)
+{{
+  return (x + 1.0) / 2.0 * (u - l) + l;
+}}
+
+inline double ulscale(double x, double l, double u)
+{{
+  return std::exp((x + 1.0) / 2.0 * (std::log(u) - std::log(l)) + std::log(l));
+}}
+
+inline float ulscale(float x, float l, float u)
+{{
+  return std::exp((x + 1.0f) / 2.0f * (std::log(u) - std::log(l)) + std::log(l));
+}}
 
 class {class_name}
 {{
@@ -56,9 +73,6 @@ private:
     {to_zero}
   }}
 }};
-
-#undef USCALE
-#undef ULSCALE
 
 #endif
 """.strip()
