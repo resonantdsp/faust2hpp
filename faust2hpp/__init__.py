@@ -12,27 +12,10 @@ CODE_TEMPLATE = """
 
 #include <cmath>
 
+#define uscale(x, l, u) (x + 1.0f) / 2.0f * (u - l) + l;
+#define ulscale(x, l, u) std::exp((x + 1.0f) / 2.0f * (std::log(u) - std::log(l)) + std::log(l));
+
 #include "{class_name}Faust.h"
-
-inline float uscale(float x, float l, float u)
-{{
-  return (x + 1.0f) / 2.0f * (u - l) + l;
-}}
-
-inline double uscale(double x, double l, double u)
-{{
-  return (x + 1.0) / 2.0 * (u - l) + l;
-}}
-
-inline double ulscale(double x, double l, double u)
-{{
-  return std::exp((x + 1.0) / 2.0 * (std::log(u) - std::log(l)) + std::log(l));
-}}
-
-inline float ulscale(float x, float l, float u)
-{{
-  return std::exp((x + 1.0f) / 2.0f * (std::log(u) - std::log(l)) + std::log(l));
-}}
 
 class {class_name}
 {{
@@ -74,6 +57,9 @@ private:
     {to_zero}
   }}
 }};
+
+#undef uscale
+#undef ulscale
 
 #endif
 """.strip()
@@ -118,7 +104,7 @@ def compile_faust(out_path: Path, dsp_path: Path, class_name: str) -> List[str]:
         with output_json_path.open("r") as fio:
             meta = json.load(fio)
         parameter_names = [i["label"] for i in meta["ui"][0]["items"]]
-    
+
     return parameter_names
 
 
@@ -133,8 +119,7 @@ class ParameterInfo(NamedTuple):
 
 
 def build_parameters(
-    parameter_names: List[str],
-    info_path: Path
+    parameter_names: List[str], info_path: Path
 ) -> List[ParameterInfo]:
     """Build the parameter infor for code generation"""
     if info_path is not None:
