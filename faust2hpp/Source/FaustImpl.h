@@ -31,26 +31,15 @@ public:
   }
 
   // blank implementations for UI
-  virtual void openTabBox(const char* label){};
-  virtual void openHorizontalBox(const char* label){};
-  virtual void openVerticalBox(const char* label){};
+  virtual void openTabBox(const char*){};
+  virtual void openHorizontalBox(const char*){};
+  virtual void openVerticalBox(const char*){};
   virtual void closeBox(){};
-  virtual void addButton(const char* label, FAUSTFLOAT* zone){};
-  virtual void addCheckButton(const char* label, FAUSTFLOAT* zone){};
-  virtual void addVerticalSlider(
-    const char* label,
-    FAUSTFLOAT* zone,
-    FAUSTFLOAT init,
-    FAUSTFLOAT min,
-    FAUSTFLOAT max,
-    FAUSTFLOAT step){};
-  virtual void addHorizontalSlider(
-    const char* label,
-    FAUSTFLOAT* zone,
-    FAUSTFLOAT init,
-    FAUSTFLOAT min,
-    FAUSTFLOAT max,
-    FAUSTFLOAT step){};
+  virtual void addButton(const char*, FAUSTFLOAT*){};
+  virtual void addCheckButton(const char*, FAUSTFLOAT*){};
+  virtual void addVerticalSlider(const char*, FAUSTFLOAT*, FAUSTFLOAT, FAUSTFLOAT, FAUSTFLOAT, FAUSTFLOAT){};
+  virtual void
+  addHorizontalSlider(const char*, FAUSTFLOAT*, FAUSTFLOAT, FAUSTFLOAT, FAUSTFLOAT, FAUSTFLOAT){};
   virtual void
   // use UI entry to expose user parameters
   addNumEntry(const char* label, FAUSTFLOAT* zone, FAUSTFLOAT, FAUSTFLOAT, FAUSTFLOAT, FAUSTFLOAT)
@@ -59,12 +48,12 @@ public:
       return;
     parameterMap.insert_or_assign(label, zone);
   }
-  virtual void addHorizontalBargraph(const char* label, FAUSTFLOAT* zone, FAUSTFLOAT min, FAUSTFLOAT max){};
-  virtual void addVerticalBargraph(const char* label, FAUSTFLOAT* zone, FAUSTFLOAT min, FAUSTFLOAT max){};
-  virtual void addSoundfile(const char* label, const char* filename, Soundfile** sf_zone){};
+  virtual void addHorizontalBargraph(const char*, FAUSTFLOAT*, FAUSTFLOAT, FAUSTFLOAT){};
+  virtual void addVerticalBargraph(const char*, FAUSTFLOAT*, FAUSTFLOAT, FAUSTFLOAT){};
+  virtual void addSoundfile(const char*, const char*, Soundfile**){};
 
   // blank implememtation for Meta
-  virtual void declare(const char* key, const char* value){};
+  virtual void declare(const char*, const char*){};
 
 private:
   std::unordered_map<const char*, FAUSTFLOAT*> parameterMap;

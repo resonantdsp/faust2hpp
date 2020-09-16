@@ -73,7 +73,7 @@ public:
 
   // -- metadata declarations
 
-  virtual void declare(REAL* zone, const char* key, const char* val) {}
+  virtual void declare(REAL*, const char*, const char*) {}
 };
 
 class UI : public UIReal<FAUSTFLOAT>
