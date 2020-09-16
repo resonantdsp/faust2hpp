@@ -105,6 +105,15 @@ def compile_faust(out_path: Path, dsp_path: Path, class_name: str) -> List[str]:
             meta = json.load(fio)
         parameter_names = [i["label"] for i in meta["ui"][0]["items"]]
 
+    output_header_path = out_path / f"{class_name}Faust.h"
+    with output_header_path.open("r") as fio:
+        code = fio.read()
+    code = code.replace(
+        "static void classInit(int sample_rate)", "static void classInit(int)"
+    )
+    with output_headeR_path.open("w") as fio:
+        fio.write(code)
+
     return parameter_names
 
 
