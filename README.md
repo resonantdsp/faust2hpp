@@ -37,3 +37,10 @@ The generated code can provide a public API to the parameters: the parameters ex
 The idea behind this package then is to create an implementation of the `UI` class which simply allows access to those public names.
 Then, the resulting FAUST class has public access to its parameters.
 Moreover, that object is wrapped in a new class which follows the JUCE conventions for DSP objects, and provides getters and setters directly to the variable memory.
+
+## TODO
+
+* Don't silently fail in the `setParameter` method when the name isn't in the map
+* Don't copy the `FaustImpl.h` header in the FAUST generated code.
+* Create a single hader mode
+* Add documentation to the script
