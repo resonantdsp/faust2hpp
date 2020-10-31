@@ -111,7 +111,7 @@ def compile_faust(out_path: Path, dsp_path: Path, class_name: str) -> List[str]:
     code = code.replace(
         "static void classInit(int sample_rate)", "static void classInit(int)"
     )
-    with output_headeR_path.open("w") as fio:
+    with output_header_path.open("w") as fio:
         fio.write(code)
 
     return parameter_names
