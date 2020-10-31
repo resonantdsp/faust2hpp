@@ -86,16 +86,16 @@ def copy_sources(out_path: Path):
 
 def compile_faust(out_path: Path, dsp_path: Path, class_name: str) -> List[str]:
     """Compile the FAUST code into the C++ header"""
-    faust_impl_path = str(SOURCE_PATH / "FaustImpl.h")
+    include_path = str(SOURCE_PATH / "Includes.h")
     output_json_path = out_path / f"{dsp_path.name}.json"
 
     with remove_file_ctx(output_json_path):
         command = (
             f"faust {str(dsp_path)} "
-            f"-lang cpp -i -scal -inpl -ftz 2 -json "
+            f"-lang cpp -scal -inpl -ftz 2 -json "
             "-scn FaustImpl "
             f"-cn {class_name}Faust "
-            f"-a {faust_impl_path} "
+            f"-a {include_path} "
             f"-o {class_name}Faust.h "
             f"-O {str(out_path)}"
         )
