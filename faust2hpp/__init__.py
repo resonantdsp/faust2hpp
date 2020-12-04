@@ -15,9 +15,11 @@ CODE_TEMPLATE = """
 #define uscale(x, l, u) (x + 1.0f) / 2.0f * (u - l) + l;
 #define ulscale(x, l, u) std::exp((x + 1.0f) / 2.0f * (std::log(u) - std::log(l)) + std::log(l));
 
+// NOTE: include Faust class first to get FAUSTFLOAT definition
 #include "{class_name}Faust.h"
+#include "FaustProcessor.h"
 
-class {class_name}
+class {class_name} : FaustProcessor
 {{
 public:
   {class_name}()
@@ -82,6 +84,7 @@ def copy_sources(out_path: Path):
     shutil.copy(SOURCE_PATH / "Meta.h", out_path / "Meta.h")
     shutil.copy(SOURCE_PATH / "UI.h", out_path / "UI.h")
     shutil.copy(SOURCE_PATH / "FaustImpl.h", out_path / "FaustImpl.h")
+    shutil.copy(SOURCE_PATH / "FaustProcessor.h", out_path / "FaustProcessor.h")
 
 
 def compile_faust(out_path: Path, dsp_path: Path, class_name: str) -> List[str]:
