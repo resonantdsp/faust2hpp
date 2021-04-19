@@ -16,10 +16,8 @@ public:
   FAUSTFLOAT* getParameter(const char* name)
   {
     const auto entry = parameterMap.find(name);
-    if (entry == parameterMap.end())
-      throw std::invalid_argument(
-          std::string("FaustImpl::getParameter: invalid parameter name: ")
-          + name);
+    // TODO: sadly this is the best option at the moment
+    if (entry == parameterMap.end()) return nullptr;
     return entry->second;
   }
 
