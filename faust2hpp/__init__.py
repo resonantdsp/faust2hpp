@@ -30,9 +30,14 @@ public:
 
   ~{class_name}() = default;
 
-  void reset()
+  void clear()
   {{
     faustDsp.instanceClear();
+  }}
+
+  void reset()
+  {{
+    clear();
     zeroParameters();
   }}
 
