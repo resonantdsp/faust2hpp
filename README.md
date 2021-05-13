@@ -14,7 +14,7 @@ pip install .
 
 ## Usage
 
-The `faust2hpp` script will be made availalbe in your path by the PIP installation.
+The `faust2hpp` script will be made available in your path by the PIP installation.
 
 ```bash
 faust2hpp --help
